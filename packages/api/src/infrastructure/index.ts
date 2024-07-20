@@ -1,23 +1,24 @@
 import fastify from 'fastify';
-import { userController } from '../adapters/http/controllers/userController';
-import fastifyJwt from 'fastify-jwt';
+import { postRoutes } from '../adapters/http/routes/postRoutes';
+import { userRoutes } from '../adapters/http/routes/userRoutes';
 
 
 const server = fastify({ logger: true });
 
-// Registra plugins si los tienes
+
 server.register(require('fastify-jwt'), {
   secret: 'your-secret-key'
 });
 
-// Opcional: Registrar un plugin para manejar errores globalmente
+
 server.setErrorHandler(function (error, request, reply) {
-  // Puedes decidir qué enviar basado en el error
+  
   reply.status(500).send({ message: 'Internal server error' });
 });
 
-// Registrar rutas
-server.register(userController);
+
+server.register(userRoutes);
+server.register(postRoutes);
 
 server.get('/', async (request, reply) => {
   return { hello: 'world' };

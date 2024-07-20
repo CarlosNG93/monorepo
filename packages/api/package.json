@@ -5,10 +5,13 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.17.0",
+    "bcrypt-ts": "^5.0.2",
+    "bcryptjs": "^2.4.3",
     "fastify": "^4.28.1",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.11",
     "fastify": "^4.28.1",
     "prisma": "^5.17.0",

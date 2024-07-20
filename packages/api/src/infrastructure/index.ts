@@ -3,37 +3,51 @@ import { postRoutes } from '../adapters/http/routes/postRoutes';
 import { userRoutes } from '../adapters/http/routes/userRoutes';
 import fastifyJwt from '@fastify/jwt';
 import fastifyMultipart from '@fastify/multipart';
+import { Server as SocketIOServer } from 'socket.io';
+import { createServer } from 'http';
 
 
-const server = fastify({ logger: true });
+const app = fastify({ logger: true });
 
 
-server.register(fastifyJwt, {
+app.register(fastifyJwt, {
   secret: 'supersecret'
 });
 
-server.register(fastifyMultipart);
+app.register(fastifyMultipart);
 
 
-server.setErrorHandler(function (error, request, reply) {
+app.setErrorHandler(function (error, request, reply) {
   
-  reply.status(500).send({ message: 'Internal server error' });
+  reply.status(500).send({ message: 'Internal app error' });
 });
 
 
-server.register(userRoutes);
-server.register(postRoutes);
+app.register(userRoutes);
+app.register(postRoutes);
 
-server.get('/', async (request, reply) => {
+app.get('/', async (request, reply) => {
   return { hello: 'world' };
 });
 
 const start = async () => {
   try {
-    await server.listen({ port: 3000 });
+    const server = createServer(app.server);
+    const io = new SocketIOServer(server);
+
+    io.on('connection', (socket) => {
+      console.log('a user connected');
+      socket.on('disconnect', () => {
+        console.log('user disconnected');
+      });
+    });
+
+    app.decorate('io', io);
+
+    await server.listen(3000);
     console.log('Server listening on http://localhost:3000');
   } catch (err) {
-    server.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
 };

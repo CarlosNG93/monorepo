@@ -26,6 +26,7 @@ export const postController = (server: FastifyInstance) => {
     }
     const { title, content } = request.body;
     const post = await postService.createPost(title, content, userPayload.id);
+    server.io.emit('newPost', post);
     return reply.status(201).send(post);
   });
 
@@ -46,6 +47,7 @@ export const postController = (server: FastifyInstance) => {
     const { title, content } = request.body;
     const { id } = request.params;
     const post = await postService.updatePost(Number(id), title, content);
+    server.io.emit('updatedPost', post);
     return reply.send(post);
   });
 
@@ -56,6 +58,7 @@ export const postController = (server: FastifyInstance) => {
     }
     const { id } = request.params;
     await postService.deletePost(Number(id));
+    server.io.emit('deletedPost', { id: Number(id) });
     return reply.send({ message: 'Post deleted' });
   });
 

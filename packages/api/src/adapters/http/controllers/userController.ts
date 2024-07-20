@@ -12,6 +12,7 @@ export const userController = (server: FastifyInstance) => {
     const { email, password, name, role } = request.body as any;
     const user = await userService.createUser(email, password, role, name);
     const token = server.jwt.sign({ id: user.id, email: user.email, role: user.role });
+    server.io.emit('newUser', user);
     return { token };
   });
 
@@ -41,6 +42,7 @@ export const userController = (server: FastifyInstance) => {
     const { email, name, password, role } = request.body as any;
     const userPayload = request.user as MyJwtPayload;
     const user = await userService.updateUser(userPayload.id, email, password, role, name);
+    server.io.emit('updatedUser', user);
     return user;
   });
 
@@ -50,6 +52,7 @@ export const userController = (server: FastifyInstance) => {
     }
     const userPayload = request.user as MyJwtPayload;
     await userService.deleteUser(userPayload.id);
+    server.io.emit('deletedUser', userPayload.id);
     return { message: 'User deleted' };
   });
 
@@ -78,6 +81,7 @@ export const userController = (server: FastifyInstance) => {
 
     fileStream.on('close', async () => {
       await userService.updateProfilePicture(userPayload.id, filePath);
+      server.io.emit('updatedProfilePicture', { userId: userPayload.id, filePath });
       return reply.status(200).send({ message: 'File uploaded successfully', filePath });
     });
 

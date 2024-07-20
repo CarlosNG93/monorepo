@@ -2,9 +2,9 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
 
 export type MyJwtPayload = {
-  id: number; 
+  id: number;
   email: string;
-  role: string; 
+  role: string;
 };
 
 export const authMiddleware = async (request: FastifyRequest, reply: FastifyReply, done: Function) => {
@@ -14,14 +14,13 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
       reply.status(401).send({ error: 'Unauthorized' });
       return;
     }
-    const decoded = jwt.verify(token, 'supersecret') as MyJwtPayload;
+    const decoded = jwt.verify(token, 'your-secret-key') as MyJwtPayload;
     request.user = decoded;
     done();
   } catch (err) {
     reply.status(401).send({ error: 'Unauthorized' });
   }
 };
-
 
 export const roleMiddleware = (requiredRole: string) => {
   return (request: FastifyRequest, reply: FastifyReply, done: Function) => {

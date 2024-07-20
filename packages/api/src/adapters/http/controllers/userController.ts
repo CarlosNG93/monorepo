@@ -36,13 +36,13 @@ export const userController = (server: FastifyInstance) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
-    const { email, name, password, role } = request.body as any; // Incluye 'role' en el body si se permite actualizar
+    const { email, name, password, role } = request.body as any; 
     const userPayload = request.user as MyJwtPayload;
     const user = await userService.updateUser(userPayload.id, email, password, role, name);
     return user;
   });
 
-  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { // Solo admin puede eliminar
+  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { 
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -51,8 +51,8 @@ export const userController = (server: FastifyInstance) => {
     return { message: 'User deleted' };
   });
 
-  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { // Solo admin puede ver todos los usuarios
-    const users = await userService.getAllUsers(); // Este método necesita ser implementado en el UserService
+  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { 
+    const users = await userService.getAllUsers(); 
     return users;
   });
 };

@@ -1,4 +1,5 @@
-import { Post } from '../../domain/models/post';
+import { Post } from "../../../domain/models/post";
+
 
 export interface IPostRepository {
   save(post: Post): Promise<Post>;

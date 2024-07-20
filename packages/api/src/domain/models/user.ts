@@ -4,6 +4,7 @@ export class User {
     public email: string,
     public password: string,
     public role: string,
+    public profilePicture?: string,
     public name?: string,
     public createdAt?: Date,
     public updatedAt?: Date

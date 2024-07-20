@@ -1,14 +1,18 @@
 import fastify from 'fastify';
 import { postRoutes } from '../adapters/http/routes/postRoutes';
 import { userRoutes } from '../adapters/http/routes/userRoutes';
+import fastifyJwt from '@fastify/jwt';
+import fastifyMultipart from '@fastify/multipart';
 
 
 const server = fastify({ logger: true });
 
 
-server.register(require('fastify-jwt'), {
-  secret: 'your-secret-key'
+server.register(fastifyJwt, {
+  secret: 'supersecret'
 });
+
+server.register(fastifyMultipart);
 
 
 server.setErrorHandler(function (error, request, reply) {

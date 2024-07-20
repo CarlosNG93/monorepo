@@ -5,16 +5,22 @@ export interface MyJwtPayload {
   }
   
   import 'fastify';
-  import { FastifyPluginCallback } from 'fastify';
+  import '@fastify/jwt';
   
   declare module 'fastify' {
     interface FastifyInstance {
       jwt: {
-        sign: (payload: any, options?: any) => string;
-        verify: (token: string, options?: any) => any;
+        sign(payload: any, options?: any): string;
+        verify(token: string, options?: any): any;
+      };
+    }
+  
+    interface FastifyRequest {
+      user: {
+        id: number;
+        email: string;
+        role: string;
       };
     }
   }
-  
-  declare module 'fastify-jwt';
   

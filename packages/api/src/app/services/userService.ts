@@ -55,6 +55,15 @@ export class UserService {
     return bcrypt.compare(password, hashedPassword);
   }
 
+  async updateProfilePicture(id: number, filePath: string): Promise<User> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.profilePicture = filePath;
+    return this.userRepository.save(user);
+  }
+
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }

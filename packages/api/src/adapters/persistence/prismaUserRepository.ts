@@ -12,36 +12,74 @@ export class PrismaUserRepository implements IUserRepository {
         email: user.email,
         password: user.password,
         name: user.name,
-        role: user.role 
+        role: user.role,
+        profilePicture: user.profilePicture
       },
       create: {
         email: user.email,
         password: user.password,
         name: user.name,
-        role: user.role 
+        role: user.role,
+        profilePicture: user.profilePicture
       }
     });
-    return new User(savedUser.id, savedUser.email, savedUser.password, savedUser.role, savedUser.name || undefined);
+    return new User(
+      savedUser.id,
+      savedUser.email,
+      savedUser.password,
+      savedUser.role,
+      savedUser.name || undefined,
+      savedUser.profilePicture || undefined,
+      savedUser.createdAt,
+      savedUser.updatedAt
+    );
   }
 
   async findById(id: number): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return null;
-    return new User(user.id, user.email, user.password, user.role, user.name || undefined);
+    return new User(
+      user.id,
+      user.email,
+      user.password,
+      user.role,
+      user.name || undefined,
+      user.profilePicture || undefined,
+      user.createdAt,
+      user.updatedAt
+    );
   }
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return null;
-    return new User(user.id, user.email, user.password, user.role, user.name || undefined);
+    return new User(
+      user.id,
+      user.email,
+      user.password,
+      user.role,
+      user.name || undefined,
+      user.profilePicture || undefined,
+      user.createdAt,
+      user.updatedAt
+    );
   }
 
   async delete(id: number): Promise<void> {
     await prisma.user.delete({ where: { id } });
   }
 
-  async findAll(): Promise<User[]> { 
+  async findAll(): Promise<User[]> {
     const users = await prisma.user.findMany();
-    return users.map(user => new User(user.id, user.email, user.password, user.role, user.name || undefined));
+    return users.map(user => new User(
+      user.id,
+      user.email,
+      user.password,
+      user.role,
+      user.name || undefined,
+      user.profilePicture || undefined,
+      user.createdAt,
+      user.updatedAt
+    ));
   }
 }

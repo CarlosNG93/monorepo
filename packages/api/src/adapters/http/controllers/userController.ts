@@ -2,12 +2,14 @@ import { FastifyInstance } from 'fastify';
 import { PrismaUserRepository } from '../../persistence/prismaUserRepository';
 import { MyJwtPayload, authMiddleware, roleMiddleware } from '../../../infrastructure/middleware/authMiddleware';
 import { UserService } from '../../../app/services/userService';
+import fs from 'fs';
+import path from 'path';
 
 const userService = new UserService(new PrismaUserRepository());
 
 export const userController = (server: FastifyInstance) => {
   server.post('/signup', async (request, reply) => {
-    const { email, password, name, role } = request.body as any; // Incluye 'role' en el body
+    const { email, password, name, role } = request.body as any;
     const user = await userService.createUser(email, password, role, name);
     const token = server.jwt.sign({ id: user.id, email: user.email, role: user.role });
     return { token };
@@ -36,13 +38,13 @@ export const userController = (server: FastifyInstance) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
-    const { email, name, password, role } = request.body as any; 
+    const { email, name, password, role } = request.body as any;
     const userPayload = request.user as MyJwtPayload;
     const user = await userService.updateUser(userPayload.id, email, password, role, name);
     return user;
   });
 
-  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { 
+  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -51,8 +53,36 @@ export const userController = (server: FastifyInstance) => {
     return { message: 'User deleted' };
   });
 
-  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { 
-    const users = await userService.getAllUsers(); 
+  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+    const users = await userService.getAllUsers();
     return users;
+  });
+
+  server.post('/profile/picture', { preHandler: [authMiddleware] }, async (request, reply) => {
+    const userPayload = request.user as MyJwtPayload;
+    const data = await request.file();
+
+    if (!data) {
+      return reply.status(400).send({ error: 'No file uploaded' });
+    }
+
+    const uploadDir = path.join(__dirname, '../../../../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadDir, `${userPayload.id}-${data.filename}`);
+    const fileStream = fs.createWriteStream(filePath);
+
+    await data.file.pipe(fileStream);
+
+    fileStream.on('close', async () => {
+      await userService.updateProfilePicture(userPayload.id, filePath);
+      return reply.status(200).send({ message: 'File uploaded successfully', filePath });
+    });
+
+    fileStream.on('error', (err) => {
+      return reply.status(500).send({ error: 'Failed to save file' });
+    });
   });
 };

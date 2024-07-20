@@ -7,9 +7,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true, 
-    "types": ["node"],
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["../../node_modules/@types", "./src/types"],  
+    "types": ["node", "custom-types"]  
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "types/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

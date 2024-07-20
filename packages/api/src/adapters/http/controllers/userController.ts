@@ -8,14 +8,14 @@ const userService = new UserService(new PrismaUserRepository());
 
 export const userController = (server: FastifyInstance) => {
   server.post('/signup', async (request, reply) => {
-    const { email, password, name } = request.body as any; // Incluye 'password' en el body
+    const { email, password, name } = request.body as any; 
     const user = await userService.createUser(email, password, name);
     const token = server.jwt.sign({ id: user.id, email: user.email });
     return { token };
   });
 
   server.post('/login', async (request, reply) => {
-    const { email, password } = request.body as any; // Incluye 'password' en el body
+    const { email, password } = request.body as any;
     const user = await userService.getUserByEmail(email);
     if (!user || !(await userService.validatePassword(password, user.password))) {
       return reply.status(400).send({ error: 'Invalid email or password' });
@@ -37,9 +37,9 @@ export const userController = (server: FastifyInstance) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
-    const { email, name } = request.body as any;
+    const { email, name, password } = request.body as any; 
     const userPayload = request.user as MyJwtPayload;
-    const user = await userService.updateUser(userPayload.id, email, name);
+    const user = await userService.updateUser(userPayload.id, email, password, name);
     return user;
   });
 

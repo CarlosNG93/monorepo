@@ -1,16 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaUserRepository } from '../../persistence/prismaUserRepository';
-import { MyJwtPayload, authMiddleware } from '../../../infrastructure/middleware/authMiddleware';
+import { MyJwtPayload, authMiddleware, roleMiddleware } from '../../../infrastructure/middleware/authMiddleware';
 import { UserService } from '../../../app/services/userService';
-
 
 const userService = new UserService(new PrismaUserRepository());
 
 export const userController = (server: FastifyInstance) => {
   server.post('/signup', async (request, reply) => {
-    const { email, password, name } = request.body as any; 
-    const user = await userService.createUser(email, password, name);
-    const token = server.jwt.sign({ id: user.id, email: user.email });
+    const { email, password, name, role } = request.body as any; // Incluye 'role' en el body
+    const user = await userService.createUser(email, password, role, name);
+    const token = server.jwt.sign({ id: user.id, email: user.email, role: user.role });
     return { token };
   });
 
@@ -20,7 +19,7 @@ export const userController = (server: FastifyInstance) => {
     if (!user || !(await userService.validatePassword(password, user.password))) {
       return reply.status(400).send({ error: 'Invalid email or password' });
     }
-    const token = server.jwt.sign({ id: user.id, email: user.email });
+    const token = server.jwt.sign({ id: user.id, email: user.email, role: user.role });
     return { token };
   });
 
@@ -37,18 +36,23 @@ export const userController = (server: FastifyInstance) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
-    const { email, name, password } = request.body as any; 
+    const { email, name, password, role } = request.body as any; // Incluye 'role' en el body si se permite actualizar
     const userPayload = request.user as MyJwtPayload;
-    const user = await userService.updateUser(userPayload.id, email, password, name);
+    const user = await userService.updateUser(userPayload.id, email, password, role, name);
     return user;
   });
 
-  server.delete('/profile', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { // Solo admin puede eliminar
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
     const userPayload = request.user as MyJwtPayload;
     await userService.deleteUser(userPayload.id);
     return { message: 'User deleted' };
+  });
+
+  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => { // Solo admin puede ver todos los usuarios
+    const users = await userService.getAllUsers(); // Este método necesita ser implementado en el UserService
+    return users;
   });
 };

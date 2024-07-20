@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaPostRepository } from '../../persistence/prismaPostRepository';
-import { MyJwtPayload, authMiddleware } from '../../../infrastructure/middleware/authMiddleware';
+import { MyJwtPayload, authMiddleware, roleMiddleware } from '../../../infrastructure/middleware/authMiddleware';
 import { PostService } from '../../../app/services/postService';
 
 const postService = new PostService(new PrismaPostRepository());
@@ -19,7 +19,7 @@ interface PostQuery {
 }
 
 export const postController = (server: FastifyInstance) => {
-  server.post<{ Body: PostBody }>('/posts', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.post<{ Body: PostBody }>('/posts', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });
@@ -38,7 +38,7 @@ export const postController = (server: FastifyInstance) => {
     return reply.send(post);
   });
 
-  server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });
@@ -49,7 +49,7 @@ export const postController = (server: FastifyInstance) => {
     return reply.send(post);
   });
 
-  server.delete<{ Params: PostParams }>('/posts/:id', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.delete<{ Params: PostParams }>('/posts/:id', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });

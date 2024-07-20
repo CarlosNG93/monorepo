@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { User } from '../../domain/models/user';
 import { IUserRepository } from './interface/userRepository.interface';
 
-
 const prisma = new PrismaClient();
 
 export class PrismaUserRepository implements IUserRepository {
@@ -11,66 +10,38 @@ export class PrismaUserRepository implements IUserRepository {
       where: { id: user.id },
       update: {
         email: user.email,
-        name: user.name || null,
         password: user.password,
-       
+        name: user.name,
+        role: user.role 
       },
       create: {
         email: user.email,
-        name: user.name || null,
         password: user.password,
-        
-      },
-      
+        name: user.name,
+        role: user.role 
+      }
     });
-    
-    return new User(
-      savedUser.id,
-      savedUser.email,
-      savedUser.password,
-      savedUser.name || undefined,
-      savedUser.createdAt,
-      savedUser.updatedAt
-    );
+    return new User(savedUser.id, savedUser.email, savedUser.password, savedUser.role, savedUser.name || undefined);
   }
 
   async findById(id: number): Promise<User | null> {
-    const user = await prisma.user.findUnique({
-      where: { id },
-    });
-    
+    const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return null;
-    
-    return new User(
-      user.id,
-      user.email,
-      user.password,
-      user.name || undefined,
-      user.createdAt,
-      user.updatedAt
-    );
+    return new User(user.id, user.email, user.password, user.role, user.name || undefined);
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-    
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return null;
-    
-    return new User(
-      user.id,
-      user.email,
-      user.password,
-      user.name || undefined,
-      user.createdAt,
-      user.updatedAt
-    );
+    return new User(user.id, user.email, user.password, user.role, user.name || undefined);
   }
 
   async delete(id: number): Promise<void> {
-    await prisma.user.delete({
-      where: { id },
-    });
+    await prisma.user.delete({ where: { id } });
+  }
+
+  async findAll(): Promise<User[]> { 
+    const users = await prisma.user.findMany();
+    return users.map(user => new User(user.id, user.email, user.password, user.role, user.name || undefined));
   }
 }

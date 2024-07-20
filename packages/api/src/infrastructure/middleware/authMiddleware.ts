@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 export type MyJwtPayload = {
   id: number; 
   email: string;
+  role: string; 
 };
 
 export const authMiddleware = async (request: FastifyRequest, reply: FastifyReply, done: Function) => {
@@ -19,4 +20,16 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
   } catch (err) {
     reply.status(401).send({ error: 'Unauthorized' });
   }
+};
+
+
+export const roleMiddleware = (requiredRole: string) => {
+  return (request: FastifyRequest, reply: FastifyReply, done: Function) => {
+    const user = request.user as MyJwtPayload;
+    if (user.role !== requiredRole) {
+      reply.status(403).send({ error: 'Forbidden' });
+      return;
+    }
+    done();
+  };
 };

@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
 
-  async createUser(email: string, password: string, name?: string): Promise<User> {
+  async createUser(email: string, password: string, role: string = 'user', name?: string): Promise<User> {
     if (!this.isValidEmail(email)) {
       throw new Error('Invalid email address');
     }
@@ -14,11 +14,11 @@ export class UserService {
       throw new Error('Email already in use');
     }
     const hashedPassword = await this.hashPassword(password);
-    const user = User.create(email, hashedPassword, name);
+    const user = User.create(email, hashedPassword, role, name);
     return this.userRepository.save(user);
   }
 
-  async updateUser(id: number, email: string, password?: string, name?: string): Promise<User> {
+  async updateUser(id: number, email: string, password?: string, role?: string, name?: string): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new Error('User not found');
@@ -27,6 +27,9 @@ export class UserService {
     user.email = email;
     if (password) {
       user.password = await this.hashPassword(password);
+    }
+    if (role) {
+      user.role = role;
     }
     user.name = name;
     return this.userRepository.save(user);
@@ -42,6 +45,10 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     return this.userRepository.findByEmail(email);
+  }
+
+  async getAllUsers(): Promise<User[]> { 
+    return this.userRepository.findAll();
   }
 
   async validatePassword(password: string, hashedPassword: string): Promise<boolean> {

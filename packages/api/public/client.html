@@ -1,44 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Socket.IO Client</title>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-      const socket = io('http://localhost:3000');
-
-      socket.on('postCreated', (post) => {
-        console.log('Post created:', post);
-      });
-
-      socket.on('postUpdated', (post) => {
-        console.log('Post updated:', post);
-      });
-
-      socket.on('postDeleted', (postId) => {
-        console.log('Post deleted:', postId);
-      });
-
-      socket.on('userCreated', (user) => {
-        console.log('User created:', user);
-      });
-
-      socket.on('userUpdated', (user) => {
-        console.log('User updated:', user);
-      });
-
-      socket.on('userDeleted', (userId) => {
-        console.log('User deleted:', userId);
-      });
-
-      socket.on('profilePictureUpdated', (data) => {
-        console.log('Profile picture updated:', data);
-      });
-    });
-  </script>
+  <title>WebSocket Client</title>
 </head>
 <body>
-  <h1>Socket.IO Client</h1>
-  <p>Check the console for notifications.</p>
+  <h1>WebSocket Client</h1>
+  <p>Check the console for WebSocket notifications.</p>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = new WebSocket('ws://172.26.3.174:3000/ws');
+
+      socket.addEventListener('open', (event) => {
+        console.log('Connected to WebSocket server');
+        socket.send('Hello from client'); 
+      });
+
+      socket.addEventListener('message', (event) => {
+        console.log('Received message:', event.data);
+      });
+
+      socket.addEventListener('close', (event) => {
+        console.log('Disconnected from WebSocket server');
+      });
+
+      socket.addEventListener('error', (event) => {
+        console.error('WebSocket error:', event);
+      });
+
+     
+      setInterval(() => {
+        console.log('WebSocket readyState:', socket.readyState);
+      }, 5000);
+    });
+  </script>
 </body>
 </html>

@@ -15,6 +15,7 @@ export class UserService {
     }
     const hashedPassword = await this.hashPassword(password);
     const user = User.create(email, hashedPassword, role, name);
+    console.log(`Creating user: ${email}`);
     return this.userRepository.save(user);
   }
 

@@ -54,50 +54,7 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.post('/login', {
-    schema: {
-      description: 'Authenticate a user',
-      tags: ['User'],
-      summary: 'Login a user',
-      body: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string' }
-        }
-      },
-      response: {
-        200: {
-          description: 'Successful login',
-          type: 'object',
-          properties: {
-            token: { type: 'string' }
-          }
-        },
-        400: {
-          description: 'Invalid credentials',
-          type: 'object',
-          properties: {
-            error: { type: 'string' }
-          }
-        }
-      }
-    }
-  }, async (request, reply) => {
-    const { email, password } = request.body as any;
-    try {
-      const user = await userService.getUserByEmail(email);
-      if (!user || !(await userService.validatePassword(password, user.password))) {
-        return reply.status(400).send({ error: 'Invalid email or password' });
-      }
-      const token = server.jwt.sign({ id: user.id, email: user.email, role: user.role });
-      reply.send({ token });
-    } catch (error: unknown) {
-      server.log.error(error instanceof Error ? error.message : 'An unexpected error occurred');
-      reply.status(400).send({ error: error instanceof Error ? error.message : 'An unexpected error occurred' });
-    }
-  });
+
 
   server.get('/profile', {
     preHandler: [authMiddleware],

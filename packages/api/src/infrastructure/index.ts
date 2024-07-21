@@ -9,6 +9,7 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import path from 'path';
 import { userRoutes } from '../adapters/http/routes/userRoutes';
 import { postRoutes } from '../adapters/http/routes/postRoutes';
+import { authRoutes } from '../adapters/http/routes/authRoutes';
 
 const app = fastify({
   logger: {
@@ -39,7 +40,8 @@ app.register(fastifySwagger as any, {
     ],
     tags: [
       { name: 'User', description: 'User related end-points' },
-      { name: 'Post', description: 'Post related end-points' }
+      { name: 'Post', description: 'Post related end-points' },
+      { name: 'Auth', description: 'Authentication end-points' }
     ],
     components: {
       securitySchemes: {
@@ -144,6 +146,7 @@ app.get('/ws', { websocket: true }, (connection) => {
 
 app.register(userRoutes);
 app.register(postRoutes);
+app.register(authRoutes);
 
 app.get('/test', async (request, reply) => {
   reply.send({ test: 'Server is working correctly' });

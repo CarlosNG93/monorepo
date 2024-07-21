@@ -1,10 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { AuthService } from '../../../app/services/authService';
-import { PrismaUserRepository } from '../../persistence/prismaUserRepository';
 
-const authService = new AuthService(new PrismaUserRepository());
-
-export const authController = (server: FastifyInstance) => {
+const createAuthController = (server: FastifyInstance, authService: AuthService) => {
   server.post('/login', {
     schema: {
       description: 'Authenticate a user',
@@ -32,6 +29,13 @@ export const authController = (server: FastifyInstance) => {
           properties: {
             error: { type: 'string' }
           }
+        },
+        500: {
+          description: 'Unexpected error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
         }
       }
     }
@@ -41,7 +45,7 @@ export const authController = (server: FastifyInstance) => {
       const token = await authService.login(email, password);
       reply.send({ token });
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof Error && err.message === 'Invalid credentials') {
         reply.status(401).send({ error: err.message });
       } else {
         reply.status(500).send({ error: 'An unexpected error occurred' });
@@ -49,3 +53,5 @@ export const authController = (server: FastifyInstance) => {
     }
   });
 };
+
+export { createAuthController };

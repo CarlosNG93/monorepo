@@ -8,7 +8,39 @@ import path from 'path';
 const userService = new UserService(new PrismaUserRepository());
 
 export const userController = (server: FastifyInstance) => {
-  server.post('/signup', async (request, reply) => {
+  server.post('/signup', {
+    schema: {
+      description: 'Register a new user',
+      tags: ['User'],
+      summary: 'Sign up a new user',
+      body: {
+        type: 'object',
+        required: ['email', 'password', 'name'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string' },
+          name: { type: 'string' },
+          role: { type: 'string', enum: ['user', 'admin'] }
+        }
+      },
+      response: {
+        200: {
+          description: 'Successful registration',
+          type: 'object',
+          properties: {
+            token: { type: 'string' }
+          }
+        },
+        400: {
+          description: 'Invalid input',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const { email, password, name, role } = request.body as any;
     server.log.info(`Signup attempt with email: ${email}`);
     try {
@@ -22,7 +54,37 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.post('/login', async (request, reply) => {
+  server.post('/login', {
+    schema: {
+      description: 'Authenticate a user',
+      tags: ['User'],
+      summary: 'Login a user',
+      body: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Successful login',
+          type: 'object',
+          properties: {
+            token: { type: 'string' }
+          }
+        },
+        400: {
+          description: 'Invalid credentials',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const { email, password } = request.body as any;
     try {
       const user = await userService.getUserByEmail(email);
@@ -37,7 +99,40 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.get('/profile', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.get('/profile', {
+    preHandler: [authMiddleware],
+    schema: {
+      description: 'Get user profile',
+      tags: ['User'],
+      summary: 'Fetch the profile of the currently authenticated user',
+      response: {
+        200: {
+          description: 'User profile',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            name: { type: 'string' },
+            role: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          description: 'Internal Server Error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -51,7 +146,49 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.put('/profile', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.put('/profile', {
+    preHandler: [authMiddleware],
+    schema: {
+      description: 'Update user profile',
+      tags: ['User'],
+      summary: 'Update the profile of the currently authenticated user',
+      body: {
+        type: 'object',
+        properties: {
+          email: { type: 'string', format: 'email' },
+          name: { type: 'string' },
+          password: { type: 'string' },
+          role: { type: 'string', enum: ['user', 'admin'] }
+        }
+      },
+      response: {
+        200: {
+          description: 'Successful update',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            name: { type: 'string' },
+            role: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          description: 'Internal Server Error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -71,7 +208,37 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.delete('/profile', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+  server.delete('/profile', {
+    preHandler: [authMiddleware, roleMiddleware('admin')],
+    schema: {
+      description: 'Delete user profile',
+      tags: ['User'],
+      summary: 'Delete the profile of the currently authenticated user',
+      response: {
+        200: {
+          description: 'Successful deletion',
+          type: 'object',
+          properties: {
+            message: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          description: 'Internal Server Error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -90,7 +257,43 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.get('/users', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+  server.get('/users', {
+    preHandler: [authMiddleware, roleMiddleware('admin')],
+    schema: {
+      description: 'Get all users',
+      tags: ['User'],
+      summary: 'Fetch all users',
+      response: {
+        200: {
+          description: 'List of users',
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              email: { type: 'string', format: 'email' },
+              name: { type: 'string' },
+              role: { type: 'string' }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          description: 'Internal Server Error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     try {
       const users = await userService.getAllUsers();
       reply.send(users);
@@ -100,7 +303,44 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-  server.post('/profile/picture', { preHandler: [authMiddleware] }, async (request, reply) => {
+  server.post('/profile/picture', {
+    preHandler: [authMiddleware],
+    schema: {
+      description: 'Upload a profile picture',
+      tags: ['User'],
+      summary: 'Upload a profile picture for the currently authenticated user',
+      body: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Successful upload',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            filePath: { type: 'string' }
+          }
+        },
+        400: {
+          description: 'Bad request',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          description: 'Internal Server Error',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     try {
       const data = await request.file();

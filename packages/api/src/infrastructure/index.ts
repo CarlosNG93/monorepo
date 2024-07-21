@@ -4,6 +4,8 @@ import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import fastifyCors from '@fastify/cors';
 import fastifyWebSocket from '@fastify/websocket';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
 import path from 'path';
 import { userRoutes } from '../adapters/http/routes/userRoutes';
 import { postRoutes } from '../adapters/http/routes/postRoutes';
@@ -19,6 +21,57 @@ const app = fastify({
     }
   }
 });
+
+app.register(fastifySwagger as any, {
+  routePrefix: '/swagger',
+  openapi: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API Documentation',
+      description: 'API documentation for the project',
+      version: '0.1.0'
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000',
+        description: 'Development server'
+      }
+    ],
+    tags: [
+      { name: 'users', description: 'User related end-points' },
+      { name: 'posts', description: 'Post related end-points' }
+    ],
+    components: {
+      securitySchemes: {
+        apiKey: {
+          type: 'apiKey',
+          name: 'apiKey',
+          in: 'header'
+        }
+      }
+    },
+    externalDocs: {
+      url: 'https://swagger.io',
+      description: 'Find more info here'
+    }
+  },
+  exposeRoute: true
+});
+
+
+app.register(fastifySwaggerUi as any, {
+  routePrefix: '/docs',
+  swagger: {
+    url: '/swagger/openapi.json'
+  },
+  uiConfig: {
+    docExpansion: 'none',
+    deepLinking: false
+  },
+  staticCSP: true,
+  transformStaticCSP: (header: any) => header,
+});
+
 
 app.register(fastifyJwt, {
   secret: 'supersecret'

@@ -38,8 +38,8 @@ app.register(fastifySwagger as any, {
       }
     ],
     tags: [
-      { name: 'users', description: 'User related end-points' },
-      { name: 'posts', description: 'Post related end-points' }
+      { name: 'User', description: 'User related end-points' },
+      { name: 'Post', description: 'Post related end-points' }
     ],
     components: {
       securitySchemes: {

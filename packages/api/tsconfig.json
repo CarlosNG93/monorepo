@@ -3,14 +3,29 @@
     "target": "ES6",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["../../node_modules/@types", "./src/types"],  
-    "types": ["node", "custom-types"]  
+    "typeRoots": [
+      "../../node_modules/@types",
+      "./src/types"
+    ],
+    "types": [
+      "node",
+      "custom-types",
+      "jest"
+    ]
   },
-  "include": ["src/**/*.ts", "types/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "types/**/*.ts",
+    "__tests__/**/*.ts",
+    "jest.setup.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

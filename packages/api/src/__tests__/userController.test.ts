@@ -1,6 +1,6 @@
 import { UserService } from '../app/services/userService';
-import { server } from '../../jest.setup';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { server } from '../jest.setup';
+
 
 
 jest.mock('../src/services/userService');  

@@ -228,7 +228,35 @@ export const postController = (server: FastifyInstance) => {
     return reply.send({ message: 'Post deleted' });
   });
 
-  server.get<{ Querystring: PostQuery }>('/posts', async (request, reply) => {
+  server.get<{ Querystring: PostQuery }>('/posts', {
+    schema: {
+      description: 'Get all posts by an author',
+      tags: ['Post'],
+      summary: 'Retrieve all posts by a specific author',
+      querystring: {
+        type: 'object',
+        required: ['authorId'],
+        properties: {
+          authorId: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'List of posts by author',
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              title: { type: 'string' },
+              content: { type: 'string' },
+              authorId: { type: 'string' }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const { authorId } = request.query;
     const posts = await postService.getAllPostsByAuthor(Number(authorId));
     return reply.send(posts);

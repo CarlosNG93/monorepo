@@ -1,14 +1,23 @@
 import fastify from 'fastify';
-import { postRoutes } from '../adapters/http/routes/postRoutes';
-import { userRoutes } from '../adapters/http/routes/userRoutes';
 import fastifyJwt from '@fastify/jwt';
 import fastifyMultipart from '@fastify/multipart';
-import { Server as SocketIOServer } from 'socket.io';
-import { createServer } from 'http';
+import fastifyStatic from '@fastify/static';
+import fastifyCors from '@fastify/cors';
+import { userRoutes } from '../adapters/http/routes/userRoutes';
+import { postRoutes } from '../adapters/http/routes/postRoutes';
+import path from 'path';
 
-
-const app = fastify({ logger: true });
-
+const app = fastify({
+  logger: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname'
+      }
+    }
+  }
+});
 
 app.register(fastifyJwt, {
   secret: 'supersecret'
@@ -16,36 +25,31 @@ app.register(fastifyJwt, {
 
 app.register(fastifyMultipart);
 
-
-app.setErrorHandler(function (error, request, reply) {
-  
-  reply.status(500).send({ message: 'Internal app error' });
+app.register(fastifyStatic, {
+  root: path.join(__dirname, '../../public'),
+  prefix: '/public/',
 });
 
+app.register(fastifyCors, {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"]
+});
 
 app.register(userRoutes);
 app.register(postRoutes);
 
-app.get('/', async (request, reply) => {
-  return { hello: 'world' };
+app.get('/test', async (request, reply) => {
+  reply.send({ test: 'Server is working correctly' });
 });
 
 const start = async () => {
   try {
-    const server = createServer(app.server);
-    const io = new SocketIOServer(server);
+    app.log.info('Starting the server');
+    await app.listen({ port: 3000, host: '0.0.0.0' });
+    app.log.info(`Server listening on http://localhost:3000`);
 
-    io.on('connection', (socket) => {
-      console.log('a user connected');
-      socket.on('disconnect', () => {
-        console.log('user disconnected');
-      });
-    });
-
-    app.decorate('io', io);
-
-    await server.listen(3000);
-    console.log('Server listening on http://localhost:3000');
+    app.log.info('Registered routes:');
+    app.printRoutes();
   } catch (err) {
     app.log.error(err);
     process.exit(1);

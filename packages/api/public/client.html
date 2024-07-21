@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket.IO Client</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      const socket = io('http://localhost:3000');
+
+      socket.on('postCreated', (post) => {
+        console.log('Post created:', post);
+      });
+
+      socket.on('postUpdated', (post) => {
+        console.log('Post updated:', post);
+      });
+
+      socket.on('postDeleted', (postId) => {
+        console.log('Post deleted:', postId);
+      });
+
+      socket.on('userCreated', (user) => {
+        console.log('User created:', user);
+      });
+
+      socket.on('userUpdated', (user) => {
+        console.log('User updated:', user);
+      });
+
+      socket.on('userDeleted', (userId) => {
+        console.log('User deleted:', userId);
+      });
+
+      socket.on('profilePictureUpdated', (data) => {
+        console.log('Profile picture updated:', data);
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>Socket.IO Client</h1>
+  <p>Check the console for notifications.</p>
+</body>
+</html>

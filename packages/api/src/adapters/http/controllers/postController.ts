@@ -19,7 +19,41 @@ interface PostQuery {
 }
 
 export const postController = (server: FastifyInstance) => {
-  server.post<{ Body: PostBody }>('/posts', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+  server.post<{ Body: PostBody }>('/posts', {
+    preHandler: [authMiddleware, roleMiddleware('admin')],
+    schema: {
+      description: 'Create a new post',
+      tags: ['Post'],
+      summary: 'Create a new post',
+      body: {
+        type: 'object',
+        required: ['title', 'content'],
+        properties: {
+          title: { type: 'string' },
+          content: { type: 'string' }
+        }
+      },
+      response: {
+        201: {
+          description: 'Post created successfully',
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            authorId: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });
@@ -35,7 +69,39 @@ export const postController = (server: FastifyInstance) => {
     return reply.status(201).send(post);
   });
 
-  server.get<{ Params: PostParams }>('/posts/:id', async (request, reply) => {
+  server.get<{ Params: PostParams }>('/posts/:id', {
+    schema: {
+      description: 'Get a post by ID',
+      tags: ['Post'],
+      summary: 'Retrieve a post by its ID',
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Post retrieved successfully',
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            authorId: { type: 'string' }
+          }
+        },
+        404: {
+          description: 'Post not found',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const { id } = request.params;
     const post = await postService.getPostById(Number(id));
     if (!post) {
@@ -44,7 +110,55 @@ export const postController = (server: FastifyInstance) => {
     return reply.send(post);
   });
 
-  server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+  server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', {
+    preHandler: [authMiddleware, roleMiddleware('admin')],
+    schema: {
+      description: 'Update a post by ID',
+      tags: ['Post'],
+      summary: 'Update a post by its ID',
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string' }
+        }
+      },
+      body: {
+        type: 'object',
+        required: ['title', 'content'],
+        properties: {
+          title: { type: 'string' },
+          content: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Post updated successfully',
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            authorId: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        404: {
+          description: 'Post not found',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });
@@ -61,7 +175,44 @@ export const postController = (server: FastifyInstance) => {
     return reply.send(post);
   });
 
-  server.delete<{ Params: PostParams }>('/posts/:id', { preHandler: [authMiddleware, roleMiddleware('admin')] }, async (request, reply) => {
+  server.delete<{ Params: PostParams }>('/posts/:id', {
+    preHandler: [authMiddleware, roleMiddleware('admin')],
+    schema: {
+      description: 'Delete a post by ID',
+      tags: ['Post'],
+      summary: 'Delete a post by its ID',
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Post deleted successfully',
+          type: 'object',
+          properties: {
+            message: { type: 'string' }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        404: {
+          description: 'Post not found',
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  },  async (request, reply) => {
     const userPayload = request.user as MyJwtPayload;
     if (!userPayload) {
       return reply.status(401).send({ error: 'Unauthorized' });

@@ -47,6 +47,7 @@
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
-    "fixtures": "ts-node fixtures/fixtures.ts"
+    "fixtures": "ts-node fixtures/fixtures.ts",
+    "test": "jest"
   }
 }

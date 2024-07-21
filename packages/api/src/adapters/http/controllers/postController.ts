@@ -26,7 +26,12 @@ export const postController = (server: FastifyInstance) => {
     }
     const { title, content } = request.body;
     const post = await postService.createPost(title, content, userPayload.id);
-    server.io.emit('newPost', post);
+    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+      if (client.readyState === client.OPEN) {
+        client.send(JSON.stringify({ type: 'newPost', data: post }));
+      }
+    });
+    
     return reply.status(201).send(post);
   });
 
@@ -47,7 +52,12 @@ export const postController = (server: FastifyInstance) => {
     const { title, content } = request.body;
     const { id } = request.params;
     const post = await postService.updatePost(Number(id), title, content);
-    server.io.emit('updatedPost', post);
+    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+      if (client.readyState === client.OPEN) {
+        client.send(JSON.stringify({ type: 'updatedPost', data: post }));
+      }
+    });
+
     return reply.send(post);
   });
 
@@ -58,7 +68,12 @@ export const postController = (server: FastifyInstance) => {
     }
     const { id } = request.params;
     await postService.deletePost(Number(id));
-    server.io.emit('deletedPost', { id: Number(id) });
+    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+      if (client.readyState === client.OPEN) {
+        client.send(JSON.stringify({ type: 'deletedPost', data: { id: Number(id) } }));
+      }
+    });
+    
     return reply.send({ message: 'Post deleted' });
   });
 

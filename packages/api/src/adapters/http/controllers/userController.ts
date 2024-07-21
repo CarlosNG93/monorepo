@@ -59,7 +59,11 @@ export const userController = (server: FastifyInstance) => {
     const userPayload = request.user as MyJwtPayload;
     try {
       const user = await userService.updateUser(userPayload.id, email, password, role, name);
-      server.io.emit('updatedUser', user);
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'updatedUser', data: user }));
+        }
+      });
       reply.send(user);
     } catch (error: unknown) {
       server.log.error(error instanceof Error ? error.message : 'Failed to update user profile');
@@ -74,7 +78,11 @@ export const userController = (server: FastifyInstance) => {
     const userPayload = request.user as MyJwtPayload;
     try {
       await userService.deleteUser(userPayload.id);
-      server.io.emit('deletedUser', userPayload.id);
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'deletedUser', data: userPayload.id }));
+        }
+      });
       reply.send({ message: 'User deleted' });
     } catch (error: unknown) {
       server.log.error(error instanceof Error ? error.message : 'Failed to delete user');
@@ -112,7 +120,11 @@ export const userController = (server: FastifyInstance) => {
 
       fileStream.on('finish', async () => {
         await userService.updateProfilePicture(userPayload.id, filePath);
-        server.io.emit('updatedProfilePicture', { userId: userPayload.id, filePath });
+        server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+          if (client.readyState === client.OPEN) {
+            client.send(JSON.stringify({ type: 'updatedProfilePicture', data: { userId: userPayload.id, filePath } }));
+          }
+        });
         reply.send({ message: 'File uploaded successfully', filePath });
       });
 

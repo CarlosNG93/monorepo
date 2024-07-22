@@ -41,7 +41,7 @@ export const postController = (server: FastifyInstance) => {
             id: { type: 'number' },
             title: { type: 'string' },
             content: { type: 'string' },
-            authorId: { type: 'string' }
+            authorId: { type: 'number' }
           }
         },
         401: {
@@ -54,19 +54,23 @@ export const postController = (server: FastifyInstance) => {
       }
     }
   }, async (request, reply) => {
-    const userPayload = request.user as MyJwtPayload;
-    if (!userPayload) {
-      return reply.status(401).send({ error: 'Unauthorized' });
-    }
-    const { title, content } = request.body;
-    const post = await postService.createPost(title, content, userPayload.id);
-    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
-      if (client.readyState === client.OPEN) {
-        client.send(JSON.stringify({ type: 'newPost', data: post }));
+    try {
+      const userPayload = request.user as MyJwtPayload;
+      if (!userPayload) {
+        return reply.status(401).send({ error: 'Unauthorized' });
       }
-    });
-    
-    return reply.status(201).send(post);
+      const { title, content } = request.body;
+      const post = await postService.createPost(title, content, userPayload.id);
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'newPost', data: post }));
+        }
+      });
+      return reply.status(201).send(post);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
   });
 
   server.get<{ Params: PostParams }>('/posts/:id', {
@@ -89,7 +93,7 @@ export const postController = (server: FastifyInstance) => {
             id: { type: 'number' },
             title: { type: 'string' },
             content: { type: 'string' },
-            authorId: { type: 'string' }
+            authorId: { type: 'number' }
           }
         },
         404: {
@@ -102,12 +106,17 @@ export const postController = (server: FastifyInstance) => {
       }
     }
   }, async (request, reply) => {
-    const { id } = request.params;
-    const post = await postService.getPostById(Number(id));
-    if (!post) {
-      return reply.status(404).send({ error: 'Post not found' });
+    try {
+      const { id } = request.params;
+      const post = await postService.getPostById(Number(id));
+      if (!post) {
+        return reply.status(404).send({ error: 'Post not found' });
+      }
+      return reply.send(post);
+    } catch (error) {
+      console.error('Error retrieving post:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
     }
-    return reply.send(post);
   });
 
   server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', {
@@ -139,7 +148,7 @@ export const postController = (server: FastifyInstance) => {
             id: { type: 'number' },
             title: { type: 'string' },
             content: { type: 'string' },
-            authorId: { type: 'string' }
+            authorId: { type: 'number' }
           }
         },
         401: {
@@ -159,20 +168,24 @@ export const postController = (server: FastifyInstance) => {
       }
     }
   }, async (request, reply) => {
-    const userPayload = request.user as MyJwtPayload;
-    if (!userPayload) {
-      return reply.status(401).send({ error: 'Unauthorized' });
-    }
-    const { title, content } = request.body;
-    const { id } = request.params;
-    const post = await postService.updatePost(Number(id), title, content);
-    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
-      if (client.readyState === client.OPEN) {
-        client.send(JSON.stringify({ type: 'updatedPost', data: post }));
+    try {
+      const userPayload = request.user as MyJwtPayload;
+      if (!userPayload) {
+        return reply.status(401).send({ error: 'Unauthorized' });
       }
-    });
-
-    return reply.send(post);
+      const { title, content } = request.body;
+      const { id } = request.params;
+      const post = await postService.updatePost(Number(id), title, content);
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'updatedPost', data: post }));
+        }
+      });
+      return reply.send(post);
+    } catch (error) {
+      console.error('Error updating post:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
   });
 
   server.delete<{ Params: PostParams }>('/posts/:id', {
@@ -212,20 +225,24 @@ export const postController = (server: FastifyInstance) => {
         }
       }
     }
-  },  async (request, reply) => {
-    const userPayload = request.user as MyJwtPayload;
-    if (!userPayload) {
-      return reply.status(401).send({ error: 'Unauthorized' });
-    }
-    const { id } = request.params;
-    await postService.deletePost(Number(id));
-    server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
-      if (client.readyState === client.OPEN) {
-        client.send(JSON.stringify({ type: 'deletedPost', data: { id: Number(id) } }));
+  }, async (request, reply) => {
+    try {
+      const userPayload = request.user as MyJwtPayload;
+      if (!userPayload) {
+        return reply.status(401).send({ error: 'Unauthorized' });
       }
-    });
-    
-    return reply.send({ message: 'Post deleted' });
+      const { id } = request.params;
+      await postService.deletePost(Number(id));
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'deletedPost', data: { id: Number(id) } }));
+        }
+      });
+      return reply.send({ message: 'Post deleted' });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
   });
 
   server.get<{ Querystring: PostQuery }>('/posts', {
@@ -250,15 +267,63 @@ export const postController = (server: FastifyInstance) => {
               id: { type: 'number' },
               title: { type: 'string' },
               content: { type: 'string' },
-              authorId: { type: 'string' }
+              authorId: { type: 'number' }
             }
           }
         }
       }
     }
   }, async (request, reply) => {
-    const { authorId } = request.query;
-    const posts = await postService.getAllPostsByAuthor(Number(authorId));
-    return reply.send(posts);
+    try {
+      const { authorId } = request.query;
+      const posts = await postService.getAllPostsByAuthor(Number(authorId));
+      return reply.send(posts);
+    } catch (error) {
+      console.error('Error retrieving posts by author:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+
+  server.get<{ Querystring: PostQuery }>('/allPosts', {
+    schema: {
+      description: 'Get all posts by an author or all posts',
+      tags: ['Post'],
+      summary: 'Retrieve all posts by a specific author or all posts',
+      querystring: {
+        type: 'object',
+        properties: {
+          authorId: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'List of posts',
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              title: { type: 'string' },
+              content: { type: 'string' },
+              authorId: { type: 'number' }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { authorId } = request.query;
+      let posts;
+      if (authorId) {
+        posts = await postService.getAllPostsByAuthor(Number(authorId));
+      } else {
+        posts = await postService.getAllPosts();
+      }
+      return reply.send(posts);
+    } catch (error) {
+      console.error('Error retrieving posts:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
   });
 };

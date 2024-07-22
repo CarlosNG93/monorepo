@@ -1,53 +1,46 @@
-import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker';
+import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
- 
-  await prisma.user.deleteMany();
+  
   await prisma.post.deleteMany();
+  
+  
+  await prisma.user.deleteMany();
 
   
-  const hashedPassword1 = await bcrypt.hash('password1', 10);
-  const user1 = await prisma.user.create({
-    data: {
-      email: faker.internet.email(),
-      password: hashedPassword1,
-      name: faker.name.fullName(),
-      role: 'admin',
-      profilePicture: faker.image.avatar()
-    },
-  });
-
-  const hashedPassword2 = await bcrypt.hash('password2', 10);
-  const user2 = await prisma.user.create({
-    data: {
-      email: faker.internet.email(),
-      password: hashedPassword2,
-      name: faker.name.fullName(),
-      role: 'user',
-      profilePicture: faker.image.avatar()
-    },
-  });
+  const users: User[] = [];
+  for (let i = 1; i <= 5; i++) {
+    const hashedPassword = await bcrypt.hash(`password${i}`, 10);
+    const role = i === 1 ? 'admin' : 'user';
+    const user = await prisma.user.create({
+      data: {
+        id: i, 
+        email: `user${i}@example.com`,
+        password: hashedPassword,
+        name: `User ${i}`,
+        role: role,
+        profilePicture: `https://example.com/avatar${i}.png`
+      },
+    });
+    users.push(user);
+  }
 
   
-  await prisma.post.create({
-    data: {
-      title: faker.lorem.sentence(),
-      content: faker.lorem.paragraphs(),
-      authorId: user1.id,
-    },
-  });
-
-  await prisma.post.create({
-    data: {
-      title: faker.lorem.sentence(),
-      content: faker.lorem.paragraphs(),
-      authorId: user2.id,
-    },
-  });
+  for (let i = 1; i <= 10; i++) {
+    const randomUserIndex = Math.floor(Math.random() * users.length);
+    const user = users[randomUserIndex];
+    await prisma.post.create({
+      data: {
+        id: i, 
+        title: `Post ${i}`,
+        content: `Content of post ${i}.`,
+        authorId: user.id,
+      },
+    });
+  }
 
   console.log('Fixtures have been successfully created');
 }

@@ -1,3 +1,4 @@
+import { ROLE_USER } from 'utilities/src/common/constants';
 import { IUserRepository } from '../../adapters/persistence/interface/userRepository.interface';
 import { User } from '../../domain/models/user';
 import bcrypt from 'bcryptjs';
@@ -5,7 +6,7 @@ import bcrypt from 'bcryptjs';
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
 
-  async createUser(email: string, password: string, role: string = 'user', name: string = '', profilePicture: string = ''): Promise<User> {
+  async createUser(email: string, password: string, role: string = ROLE_USER, name: string = '', profilePicture: string = ''): Promise<User> {
     if (!this.isValidEmail(email)) {
       throw new Error('Invalid email address');
     }

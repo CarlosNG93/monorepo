@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaPostRepository } from '../../persistence/prismaPostRepository';
 import { MyJwtPayload, authMiddleware, roleMiddleware } from '../../../infrastructure/middleware/authMiddleware';
 import { PostService } from '../../../app/services/postService';
+import { ROLE_ADMIN } from 'utilities/src/common/constants';
 
 const postService = new PostService(new PrismaPostRepository());
 
@@ -20,7 +21,7 @@ interface PostQuery {
 
 export const postController = (server: FastifyInstance) => {
   server.post<{ Body: PostBody }>('/posts', {
-    preHandler: [authMiddleware, roleMiddleware('admin')],
+    preHandler: [authMiddleware, roleMiddleware(ROLE_ADMIN)],
     schema: {
       description: 'Create a new post',
       tags: ['Post'],
@@ -120,7 +121,7 @@ export const postController = (server: FastifyInstance) => {
   });
 
   server.put<{ Params: PostParams; Body: PostBody }>('/posts/:id', {
-    preHandler: [authMiddleware, roleMiddleware('admin')],
+    preHandler: [authMiddleware, roleMiddleware(ROLE_ADMIN)],
     schema: {
       description: 'Update a post by ID',
       tags: ['Post'],
@@ -189,7 +190,7 @@ export const postController = (server: FastifyInstance) => {
   });
 
   server.delete<{ Params: PostParams }>('/posts/:id', {
-    preHandler: [authMiddleware, roleMiddleware('admin')],
+    preHandler: [authMiddleware, roleMiddleware(ROLE_ADMIN)],
     schema: {
       description: 'Delete a post by ID',
       tags: ['Post'],

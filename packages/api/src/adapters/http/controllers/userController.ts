@@ -4,6 +4,7 @@ import { MyJwtPayload, authMiddleware, roleMiddleware } from '../../../infrastru
 import { UserService } from '../../../app/services/userService';
 import fs from 'fs';
 import path from 'path';
+import{ ROLE_ADMIN, ROLE_USER} from 'utilities/src/common/constants';
 
 const userService = new UserService(new PrismaUserRepository());
 
@@ -20,7 +21,7 @@ export const userController = (server: FastifyInstance) => {
           email: { type: 'string', format: 'email' },
           password: { type: 'string' },
           name: { type: 'string' },
-          role: { type: 'string', enum: ['user', 'admin'] }
+          role: { type: 'string', enum: [ROLE_USER, ROLE_ADMIN] }
         }
       },
       response: {
@@ -184,7 +185,7 @@ export const userController = (server: FastifyInstance) => {
   
   
   server.delete('/profile', {
-    preHandler: [authMiddleware, roleMiddleware('admin')],
+    preHandler: [authMiddleware, roleMiddleware(ROLE_ADMIN)],
     schema: {
       description: 'Delete user profile',
       tags: ['User'],
@@ -233,7 +234,7 @@ export const userController = (server: FastifyInstance) => {
   });
 
   server.get('/users', {
-    preHandler: [authMiddleware, roleMiddleware('admin')],
+    preHandler: [authMiddleware, roleMiddleware(ROLE_ADMIN)],
     schema: {
       description: 'Get all users',
       tags: ['User'],

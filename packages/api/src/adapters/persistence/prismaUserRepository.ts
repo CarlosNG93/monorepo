@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 
 export class PrismaUserRepository implements IUserRepository {
   async save(user: User): Promise<User> {
+    console.log("Before saving:", user);
+  
     const savedUser = await prisma.user.upsert({
       where: { id: user.id },
       update: {
@@ -23,18 +25,21 @@ export class PrismaUserRepository implements IUserRepository {
         profilePicture: user.profilePicture
       }
     });
+  
+    console.log("Saving user:", savedUser);
+  
     return new User(
       savedUser.id,
       savedUser.email,
       savedUser.password,
       savedUser.role,
-      savedUser.name || undefined,
-      savedUser.profilePicture || undefined,
+      savedUser.name || '',
+      savedUser.profilePicture || '',
       savedUser.createdAt,
       savedUser.updatedAt
     );
   }
-
+  
   async findById(id: number): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return null;
@@ -43,8 +48,8 @@ export class PrismaUserRepository implements IUserRepository {
       user.email,
       user.password,
       user.role,
-      user.name || undefined,
-      user.profilePicture || undefined,
+      user.name || '',
+      user.profilePicture || '',
       user.createdAt,
       user.updatedAt
     );
@@ -58,8 +63,8 @@ export class PrismaUserRepository implements IUserRepository {
       user.email,
       user.password,
       user.role,
-      user.name || undefined,
-      user.profilePicture || undefined,
+      user.name || '',
+      user.profilePicture || '',
       user.createdAt,
       user.updatedAt
     );
@@ -76,8 +81,8 @@ export class PrismaUserRepository implements IUserRepository {
       user.email,
       user.password,
       user.role,
-      user.name || undefined,
-      user.profilePicture || undefined,
+      user.name || '',
+      user.profilePicture || '',
       user.createdAt,
       user.updatedAt
     ));

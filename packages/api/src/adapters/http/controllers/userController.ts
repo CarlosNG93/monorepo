@@ -54,8 +54,6 @@ export const userController = (server: FastifyInstance) => {
     }
   });
 
-
-
   server.get('/profile', {
     preHandler: [authMiddleware],
     schema: {
@@ -67,7 +65,7 @@ export const userController = (server: FastifyInstance) => {
           description: 'User profile',
           type: 'object',
           properties: {
-            id: { type: 'string' },
+            id: { type: 'number' },
             email: { type: 'string', format: 'email' },
             name: { type: 'string' },
             role: { type: 'string' }
@@ -96,12 +94,23 @@ export const userController = (server: FastifyInstance) => {
     const userPayload = request.user as MyJwtPayload;
     try {
       const user = await userService.getUserById(userPayload.id);
-      reply.send(user);
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+      console.log("usuario", user);
+      reply.send({
+        id: user.id,
+        email: user.email,
+        name: user.name || '',  
+        role: user.role
+      });
     } catch (error: unknown) {
       server.log.error(error instanceof Error ? error.message : 'Failed to fetch user profile');
       reply.status(500).send({ error: error instanceof Error ? error.message : 'Failed to fetch user profile' });
     }
   });
+  
+  
 
   server.put('/profile', {
     preHandler: [authMiddleware],
@@ -115,7 +124,8 @@ export const userController = (server: FastifyInstance) => {
           email: { type: 'string', format: 'email' },
           name: { type: 'string' },
           password: { type: 'string' },
-          role: { type: 'string', enum: ['user', 'admin'] }
+          role: { type: 'string', enum: ['user', 'admin'] },
+          profilePicture: { type: 'string' }
         }
       },
       response: {
@@ -123,10 +133,11 @@ export const userController = (server: FastifyInstance) => {
           description: 'Successful update',
           type: 'object',
           properties: {
-            id: { type: 'string' },
+            id: { type: 'number' },
             email: { type: 'string', format: 'email' },
             name: { type: 'string' },
-            role: { type: 'string' }
+            role: { type: 'string' },
+            profilePicture: { type: 'string' }
           }
         },
         401: {
@@ -149,22 +160,29 @@ export const userController = (server: FastifyInstance) => {
     if (!request.user || typeof request.user === 'string') {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
-    const { email, name, password, role } = request.body as any;
+    const { email, name, password, role, profilePicture } = request.body as any;
     const userPayload = request.user as MyJwtPayload;
     try {
-      const user = await userService.updateUser(userPayload.id, email, password, role, name);
+      const user = await userService.updateUser(userPayload.id, email, password, role, name, profilePicture);
       server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
         if (client.readyState === client.OPEN) {
           client.send(JSON.stringify({ type: 'updatedUser', data: user }));
         }
       });
-      reply.send(user);
+      reply.send({
+        id: user.id,
+        email: user.email,
+        name: user.name || '',
+        role: user.role,
+        profilePicture: user.profilePicture || ''
+      });
     } catch (error: unknown) {
       server.log.error(error instanceof Error ? error.message : 'Failed to update user profile');
       reply.status(500).send({ error: error instanceof Error ? error.message : 'Failed to update user profile' });
     }
   });
-
+  
+  
   server.delete('/profile', {
     preHandler: [authMiddleware, roleMiddleware('admin')],
     schema: {
@@ -227,7 +245,7 @@ export const userController = (server: FastifyInstance) => {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'string' },
+              id: { type: 'number' },
               email: { type: 'string', format: 'email' },
               name: { type: 'string' },
               role: { type: 'string' }

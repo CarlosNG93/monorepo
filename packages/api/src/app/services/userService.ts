@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
 
-  async createUser(email: string, password: string, role: string = 'user', name?: string): Promise<User> {
+  async createUser(email: string, password: string, role: string = 'user', name: string = '', profilePicture: string = ''): Promise<User> {
     if (!this.isValidEmail(email)) {
       throw new Error('Invalid email address');
     }
@@ -14,12 +14,12 @@ export class UserService {
       throw new Error('Email already in use');
     }
     const hashedPassword = await this.hashPassword(password);
-    const user = User.create(email, hashedPassword, role, name);
+    const user = User.create(email, hashedPassword, role, name, profilePicture);
     console.log(`Creating user: ${email}`);
     return this.userRepository.save(user);
   }
 
-  async updateUser(id: number, email: string, password?: string, role?: string, name?: string): Promise<User> {
+  async updateUser(id: number, email: string, password?: string, role?: string, name: string = '', profilePicture: string = ''): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new Error('User not found');
@@ -32,10 +32,11 @@ export class UserService {
     if (role) {
       user.role = role;
     }
-    user.name = name;
+    user.name = name || user.name;
+    user.profilePicture = profilePicture || user.profilePicture;
     return this.userRepository.save(user);
   }
-
+  
   async deleteUser(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }

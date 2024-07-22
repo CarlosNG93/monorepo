@@ -282,18 +282,12 @@ export const userController = (server: FastifyInstance) => {
   server.post('/profile/picture', {
     preHandler: [authMiddleware],
     schema: {
-      description: 'Upload a profile picture',
-      tags: ['User'],
-      summary: 'Upload a profile picture for the currently authenticated user',
-      body: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' }
-        }
-      },
+      description: 'Subir una foto de perfil',
+      tags: ['Usuario'],
+      summary: 'Subir una foto de perfil para el usuario autenticado actualmente',
       response: {
         200: {
-          description: 'Successful upload',
+          description: 'Carga exitosa',
           type: 'object',
           properties: {
             message: { type: 'string' },
@@ -301,14 +295,14 @@ export const userController = (server: FastifyInstance) => {
           }
         },
         400: {
-          description: 'Bad request',
+          description: 'Solicitud incorrecta',
           type: 'object',
           properties: {
             error: { type: 'string' }
           }
         },
         500: {
-          description: 'Internal Server Error',
+          description: 'Error interno del servidor',
           type: 'object',
           properties: {
             error: { type: 'string' }
@@ -321,36 +315,37 @@ export const userController = (server: FastifyInstance) => {
     try {
       const data = await request.file();
       if (!data) {
-        return reply.status(400).send({ error: 'No file uploaded' });
+        return reply.status(400).send({ error: 'No se subió ningún archivo' });
       }
-
+  
       const uploadDir = path.join(__dirname, '../../../../../uploads');
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
-
+  
       const filePath = path.join(uploadDir, `${userPayload.id}-${data.filename}`);
-      const fileStream = fs.createWriteStream(filePath);
-
-      data.file.pipe(fileStream);
-
-      fileStream.on('finish', async () => {
-        await userService.updateProfilePicture(userPayload.id, filePath);
-        server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
-          if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify({ type: 'updatedProfilePicture', data: { userId: userPayload.id, filePath } }));
-          }
-        });
-        reply.send({ message: 'File uploaded successfully', filePath });
+  
+      
+      await new Promise((resolve, reject) => {
+        const fileStream = fs.createWriteStream(filePath);
+        data.file.pipe(fileStream);
+  
+        fileStream.on('finish', resolve);
+        fileStream.on('error', reject);
       });
-
-      fileStream.on('error', (err) => {
-        server.log.error('Failed to save file:', err);
-        reply.status(500).send({ error: 'Failed to save file' });
+  
+     
+      await userService.updateProfilePicture(userPayload.id, filePath);
+      server.websocketServer?.clients.forEach((client: { readyState: any; OPEN: any; send: (arg0: string) => void; }) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: 'updatedProfilePicture', data: { userId: userPayload.id, filePath } }));
+        }
       });
-    } catch (error: unknown) {
-      server.log.error(error instanceof Error ? error.message : 'Failed to process file upload');
-      reply.status(500).send({ error: error instanceof Error ? error.message : 'Failed to process file upload' });
+  
+      return reply.send({ message: 'Archivo subido exitosamente', filePath });
+    } catch (error) {
+      server.log.error('Error al procesar la solicitud:', error);
+      return reply.status(500).send({ error: 'Error al procesar la solicitud' });
     }
   });
 };

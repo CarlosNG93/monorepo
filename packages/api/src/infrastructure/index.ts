@@ -10,6 +10,9 @@ import path from 'path';
 import { userRoutes } from '../adapters/http/routes/userRoutes';
 import { postRoutes } from '../adapters/http/routes/postRoutes';
 import { authRoutes } from '../adapters/http/routes/authRoutes';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = fastify({
   logger: {
@@ -79,7 +82,11 @@ app.register(fastifyJwt, {
   secret: 'supersecret'
 });
 
-app.register(fastifyMultipart);
+app.register(fastifyMultipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024 
+  }
+});
 
 app.register(fastifyStatic, {
   root: path.join(__dirname, '../../public'),

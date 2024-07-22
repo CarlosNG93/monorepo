@@ -1,4 +1,5 @@
 import { ROLE_USER } from 'utilities/src/common/constants';
+import { hashPassword, isValidEmail } from 'utilities/src/common/helpers';
 import { IUserRepository } from '../../adapters/persistence/interface/userRepository.interface';
 import { User } from '../../domain/models/user';
 import bcrypt from 'bcryptjs';
@@ -7,14 +8,14 @@ export class UserService {
   constructor(private userRepository: IUserRepository) {}
 
   async createUser(email: string, password: string, role: string = ROLE_USER, name: string = '', profilePicture: string = ''): Promise<User> {
-    if (!this.isValidEmail(email)) {
+    if (!isValidEmail(email)) {
       throw new Error('Invalid email address');
     }
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
       throw new Error('Email already in use');
     }
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = await hashPassword(password);
     const user = User.create(email, hashedPassword, role, name, profilePicture);
     console.log(`Creating user: ${email}`);
     return this.userRepository.save(user);
@@ -28,7 +29,7 @@ export class UserService {
 
     user.email = email;
     if (password) {
-      user.password = await this.hashPassword(password);
+      user.password = await hashPassword(password);
     }
     if (role) {
       user.role = role;
@@ -65,13 +66,5 @@ export class UserService {
     }
     user.profilePicture = filePath;
     return this.userRepository.save(user);
-  }
-
-  private async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
-  }
-
-  private isValidEmail(email: string): boolean {
-    return /\S+@\S+\.\S+/.test(email);
   }
 }

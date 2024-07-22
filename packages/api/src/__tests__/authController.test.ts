@@ -8,6 +8,7 @@ class MockAuthService extends AuthService {
 }
 
 const buildServer = (authService: AuthService): FastifyInstance => {
+
   const server = fastify({ logger: false });
   server.register(fastifyJwt, { secret: 'supersecret' });
 

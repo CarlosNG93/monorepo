@@ -1,8 +1,10 @@
+
 # Monorepo
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
   - [Install Dependencies](#install-dependencies)
   - [Build the Packages](#build-the-packages)
@@ -14,7 +16,7 @@
 - [Conclusion](#conclusion)
 
 ## Overview
-<details> <summary>Click to expand</summary>
+
 The monorepo is organized into several packages under the packages folder, each dedicated to a specific aspect of the system:
 
 ### API:
@@ -25,40 +27,39 @@ Houses the core business logic and service layer that interacts with the databas
 
 ### Utilities:
 Provides common tools and functions that can be used by other packages.
-</details>
+
 ## Getting Started
-<details> <summary>Click to expand</summary>
+
 To get the project up and running, follow these steps:
-</details>
+
 ### Install Dependencies:
-<details> <summary>Click to expand</summary>
+
 From the root of the monorepo, run:
 
    
     yarn install
-</details>
+
 ### Build the packages:
-<details> <summary>Click to expand</summary>
+
 From the root of the monorepo, run:
 
     yarn build
-   </details>
+    
 ### Start the API Server
-<details> <summary>Click to expand</summary>
+
 From the root of the monorepo, run:
 
     yarn workspace api run dev
-
+  
   This will start the Fastify server on port 3000 and it will be ready to accept requests.
-</details>  
+
 ### Testing
-<details> <summary>Click to expand</summary>
+
 From the api package directory, run:
 
     npm test
-  </details>
 ## Project Structure
-<details> <summary>Click to expand</summary>
+
     monorepo/
 │
 ├── .github/
@@ -106,9 +107,8 @@ From the api package directory, run:
 ├── package.json
 ├── tsconfig.json
 ├── turbo.json
-</details>  
+
 ## Architecture
-<details> <summary>Click to expand</summary>
 This project is a monorepo that uses a package-based architecture to improve scalability and maintainability. It follows the principles of Hexagonal Architecture (also known as Ports and Adapters) to ensure a clean separation of concerns and allow for independent development and code reuse.
 
 Fastify provides a robust framework for the HTTP server, optimized for performance and low overhead, ideal for building fast API services.
@@ -118,19 +118,14 @@ TypeScript offers compile-time type safety, enhancing code quality and reducing 
 Prisma is used to interact with the PostgreSQL database, enabling efficient and secure CRUD operations through a modern and scalable ORM.
 
 Turbo (TurboRepo) manages building, testing, and running scripts across the monorepo, ensuring dependencies are up to date and tasks are run efficiently.
-</details>  
+
 ## Maintenance and Expansion
-<details> <summary>Click to expand</summary>
 To maintain and expand this project, consider adhering to best software development practices, including:
 
 -   Unit Testing: Each controller includes unit tests to ensure components function as expected.
 -   Documentation: Keep documentation up to date with changes in the code and new functionalities.
 -   Code Review: Implement a code review process to enhance code quality and share knowledge among the team.
-- </details>  
 ## Conclusion
-<details> <summary>Click to expand</summary>
 This monorepo is designed to be a solid foundation for complex and scalable applications, facilitating the management of multiple packages and collaboration in large teams.
 
-
 Feel free to make any additional adjustments or customizations to fit your specific project needs.
-</details>  

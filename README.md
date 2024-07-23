@@ -8,6 +8,7 @@
 - [Getting Started](#getting-started)
   - [Install Dependencies](#install-dependencies)
   - [Build the Packages](#build-the-packages)
+  - [Generate Prisma Client](#generate-prisma-client)
   - [Start the API Server](#start-the-api-server)
   - [Testing](#testing)
 - [Project Structure](#project-structure)
@@ -32,32 +33,64 @@ Provides common tools and functions that can be used by other packages.
 
 To get the project up and running, follow these steps:
 
-### Install Dependencies:
+### Build and Start Containers
 
-From the root of the monorepo, run:
+To build and start the Docker containers for the project, run the following command from the root of the monorepo:
 
-   
+    docker-compose up --build
+
+This will build the Docker images and start the containers. The Fastify server will be available at `http://localhost:3000`.
+
+### Stopping Containers
+
+To stop the running Docker containers, use the following command:
+
+    docker-compose down
+
+### Accessing Containers
+
+To access a running container, for example, the `app` container, use:
+
+    docker-compose exec app /bin/sh
+
+You can run Prisma commands inside the container, for example:
+
+    npx prisma generate --schema=./packages/api/prisma/schema.prisma
+
+### Install Dependencies
+
+To install the dependencies for the project, run the following command from the root of the monorepo:
+
     yarn install
 
-### Build the packages:
+### Build the Packages
 
-From the root of the monorepo, run:
+To build the packages, run the following command from the root of the monorepo:
 
     yarn build
-    
+
+### Generate Prisma Client
+
+Before starting the API server, you need to generate the Prisma client. Run the following command:
+
+    npx prisma generate --schema=./packages/api/prisma/schema.prisma
+
 ### Start the API Server
 
-From the root of the monorepo, run:
+To start the API server, run the following command from the root of the monorepo:
 
     yarn workspace api run dev
-  
-  This will start the Fastify server on port 3000 and it will be ready to accept requests.
 
-### Testing
+This will start the Fastify server on port 3000 and it will be ready to accept requests.
 
-From the api package directory, run:
+### Running Tests
 
-    npm test
+To run tests inside the Docker container, use the following command:
+
+    docker-compose run app npm test --prefix packages/api
+
+This will execute the tests defined in the `packages/api` directory within the Docker environment.
+
 ## Project Structure
 
         monorepo/

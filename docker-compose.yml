@@ -1,6 +1,5 @@
 version: '3.8'
 
-# Configuración de políticas y registro
 x-configs:
   policy: &policy
     restart: always
@@ -19,7 +18,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - .db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     ports:
       - "5432:5432"
     <<: [*logging, *policy]
@@ -30,7 +30,13 @@ services:
       target: dev
     volumes:
       - .:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
-    command: yarn run dev
+    command: ./scripts/start.sh
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
     <<: [*logging, *policy]
+
+volumes:
+  db-data:

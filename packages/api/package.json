@@ -47,12 +47,16 @@
     "utilities": "workspace:*"
   },
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon src/infrastructure/index.ts",
+    "prisma": "prisma generate",
     "build": "tsc",
     "start": "node dist/index.js",
     "fixtures": "ts-node fixtures/fixtures.ts",
-    "test": "jest",
+    "test": "dotenv -e .env.test -- jest",
     "migrate:prod": "npx prisma migrate dev --name init --schema=./prisma/schema.prisma && npx prisma generate --schema=./prisma/schema.prisma",
     "migrate:test": "npx prisma migrate dev --name init --schema=./prisma/schema.test.prisma && npx prisma generate --schema=./prisma/schema.test.prisma"
+  },
+  "prisma": {
+    "schema": "./prisma/schema.prisma"
   }
 }

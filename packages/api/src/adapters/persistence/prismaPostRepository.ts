@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Post as PrismaPost } from '@prisma/client';
 import { Post } from '../../domain/models/post';
 import { IPostRepository } from './interface/postRepository.interface';
 
@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export class PrismaPostRepository implements IPostRepository {
   async save(post: Post): Promise<Post> {
     const savedPost = await prisma.post.upsert({
-      where: { id: post.id || 0 }, 
+      where: { id: post.id || 0 },
       update: {
         title: post.title,
         content: post.content ?? null,
@@ -15,7 +15,7 @@ export class PrismaPostRepository implements IPostRepository {
       create: {
         title: post.title,
         content: post.content ?? null,
-        authorId: Number(post.authorId), 
+        authorId: Number(post.authorId),
       },
     });
 
@@ -56,7 +56,7 @@ export class PrismaPostRepository implements IPostRepository {
       where: { authorId },
     });
 
-    return posts.map(post => new Post(
+    return posts.map((post: PrismaPost) => new Post(
       post.id,
       post.title,
       post.content ?? null,
@@ -68,7 +68,7 @@ export class PrismaPostRepository implements IPostRepository {
 
   async findAll(): Promise<Post[]> {
     const posts = await prisma.post.findMany();
-    return posts.map(post => new Post(
+    return posts.map((post: PrismaPost) => new Post(
       post.id,
       post.title,
       post.content ?? null,

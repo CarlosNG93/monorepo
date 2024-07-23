@@ -4,6 +4,7 @@ import { IUserRepository } from '../../adapters/persistence/interface/userReposi
 import { User } from '../../domain/models/user';
 import bcrypt from 'bcryptjs';
 
+
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
 

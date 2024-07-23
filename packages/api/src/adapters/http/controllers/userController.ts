@@ -282,12 +282,12 @@ export const userController = (server: FastifyInstance) => {
   server.post('/profile/picture', {
     preHandler: [authMiddleware],
     schema: {
-      description: 'Subir una foto de perfil',
-      tags: ['Usuario'],
-      summary: 'Subir una foto de perfil para el usuario autenticado actualmente',
+      description: 'Upload a profile picture',
+      tags: ['User'],
+      summary: 'Upload a profile picture for the currently authenticated user',
       response: {
         200: {
-          description: 'Carga exitosa',
+          description: 'Successful upload',
           type: 'object',
           properties: {
             message: { type: 'string' },
@@ -295,14 +295,14 @@ export const userController = (server: FastifyInstance) => {
           }
         },
         400: {
-          description: 'Solicitud incorrecta',
+          description: 'No file uploaded',
           type: 'object',
           properties: {
             error: { type: 'string' }
           }
         },
         500: {
-          description: 'Error interno del servidor',
+          description: 'Internal Server Error',
           type: 'object',
           properties: {
             error: { type: 'string' }
@@ -315,7 +315,7 @@ export const userController = (server: FastifyInstance) => {
     try {
       const data = await request.file();
       if (!data) {
-        return reply.status(400).send({ error: 'No se subió ningún archivo' });
+        return reply.status(400).send({ error: 'No file uploaded' });
       }
   
       const uploadDir = path.join(__dirname, '../../../../../uploads');
@@ -325,7 +325,9 @@ export const userController = (server: FastifyInstance) => {
   
       const filePath = path.join(uploadDir, `${userPayload.id}-${data.filename}`);
   
-      
+      if (fs.existsSync(filePath)) {
+        return reply.status(400).send({ error: 'File exist' });
+      }
       await new Promise((resolve, reject) => {
         const fileStream = fs.createWriteStream(filePath);
         data.file.pipe(fileStream);
@@ -342,10 +344,10 @@ export const userController = (server: FastifyInstance) => {
         }
       });
   
-      return reply.send({ message: 'Archivo subido exitosamente', filePath });
+      return reply.send({ message: 'Successful upload', filePath });
     } catch (error) {
-      server.log.error('Error al procesar la solicitud:', error);
-      return reply.status(500).send({ error: 'Error al procesar la solicitud' });
+      server.log.error('Error:', error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
     }
   });
 };

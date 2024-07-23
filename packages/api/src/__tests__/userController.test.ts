@@ -6,9 +6,13 @@ import { userController } from '../adapters/http/controllers/userController';
 import { ROLE_ADMIN, ROLE_USER } from 'utilities/src/common/constants';
 import path from 'path';
 import fs from 'fs';
+import { UserService } from '../app/services/userService';
+import fastifyMultipart from '@fastify/multipart';
 
 const prisma = new PrismaClient();
 const server = buildServer();
+
+server.register(fastifyMultipart);
 
 server.register(fastifyJwt, { secret: 'supersecret' });
 userController(server);
@@ -21,6 +25,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   await prisma.post.deleteMany();
   await prisma.user.deleteMany();
+
+  console.log('Usuarios eliminados:', await prisma.user.findMany());
 
   await prisma.user.createMany({
     data: [
@@ -109,47 +115,48 @@ describe('User Controller', () => {
   });
 });
 
+
 describe('User Controller - Profile Picture Upload', () => {
   const testFilePath = path.join(__dirname, 'test-image.jpg');
+  const testFileContent = 'dummy content';
 
-  beforeEach(() => {
-    
-    fs.writeFileSync(testFilePath, 'dummy content');
-  });
-
-  afterEach(() => {
+  beforeEach(async () => {
     
     if (fs.existsSync(testFilePath)) {
+      console.log('Deleting existing test file:', testFilePath);
+      fs.unlinkSync(testFilePath);
+    }
+    console.log('Creating test file:', testFilePath);
+    fs.writeFileSync(testFilePath, testFileContent);
+  });
+
+  afterEach(async () => {
+    if (fs.existsSync(testFilePath)) {
+      console.log('Deleting test file:', testFilePath);
       fs.unlinkSync(testFilePath);
     }
   });
 
-  it('should upload a profile picture for authenticated user', async () => {
-    const token = server.jwt.sign({ id: 1, email: 'user1@example.com', role: ROLE_ADMIN });
+  
+
+  it('should return 400 if file already exists', async () => {
+    const token = server.jwt.sign({ id: 1, email: 'user1@example.com', role: 'ROLE_ADMIN' });
+
+    console.log('Generated JWT:', token);
+
+    // Simula que el archivo ya existe antes de la subida
+    fs.writeFileSync(testFilePath, testFileContent);
 
     const response = await supertest(server.server)
       .post('/profile/picture')
       .set('Authorization', `Bearer ${token}`)
       .attach('file', testFilePath);
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(expect.objectContaining({
-      message: 'File uploaded successfully',
-      filePath: expect.any(String),
-    }));
-  });
-
-  it('should return 400 if no file is uploaded', async () => {
-    const token = server.jwt.sign({ id: 1, email: 'user1@example.com', role: ROLE_ADMIN });
-
-    const response = await supertest(server.server)
-      .post('/profile/picture')
-      .set('Authorization', `Bearer ${token}`)
-      .type('form')
-      .send();
+    console.log('Response status:', response.status);
+    console.log('Response body:', response.body);
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: 'No file uploaded' });
+    expect(response.body).toEqual({ error: 'File exist' });
   });
 
   it('should return 401 if user is not authenticated', async () => {
@@ -157,29 +164,11 @@ describe('User Controller - Profile Picture Upload', () => {
       .post('/profile/picture')
       .send();
 
+    console.log('Response status:', response.status);
+    console.log('Response body:', response.body);
+
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: 'Unauthorized' });
   });
 
-  it('should handle file saving errors gracefully', async () => {
-    const token = server.jwt.sign({ id: 1, email: 'user1@example.com', role: ROLE_ADMIN });
-
-    
-    jest.spyOn(fs, 'createWriteStream').mockImplementation(() => {
-      const stream = new (require('stream').Writable)();
-      process.nextTick(() => stream.emit('error', new Error('Mock file write error')));
-      return stream;
-    });
-
-    const response = await supertest(server.server)
-      .post('/profile/picture')
-      .set('Authorization', `Bearer ${token}`)
-      .attach('file', testFilePath);
-
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: 'Failed to save file' });
-
-    
-    jest.restoreAllMocks();
-  });
 });

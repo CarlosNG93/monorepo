@@ -16,7 +16,7 @@
     "heroku-postbuild": "yarn install --ignore-engines"
   },
   "engines": {
-    "node": ">=14 <21",
+    "node": ">=18 <21",
     "yarn": "1.x"
   },
   "devDependencies": {

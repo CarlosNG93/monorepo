@@ -12,15 +12,16 @@
   "scripts": {
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "heroku-postbuild": "yarn install --ignore-engines"
+  },
+  "engines": {
+    "node": ">=14 <21",
+    "yarn": "1.x"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",
     "turbo": "^1.4.3"
   },
-  "packageManager": "yarn@1.22.22",
-  "engines": {
-    "node": ">=14.x",
-    "yarn": ">=1.22.x"
-  }
+  "packageManager": "yarn@1.22.22"
 }

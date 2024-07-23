@@ -1,0 +1,14 @@
+# vs
+.vscode
+
+# docker
+docker-compose.yml
+docker-compose-dev.yml
+
+# app
+node_modules
+
+# database
+.db-*
+
+.env.example

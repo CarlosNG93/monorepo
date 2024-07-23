@@ -61,7 +61,7 @@ const createAuthController = (server: FastifyInstance, authService: AuthService)
   server.post('/signup', {
     schema: {
       description: 'Register a new user',
-      tags: ['User'],
+      tags: ['Auth'],
       summary: 'Sign up a new user',
       body: {
         type: 'object',

@@ -57,17 +57,6 @@ You can run Prisma commands inside the container, for example:
 
     npx prisma generate --schema=./packages/api/prisma/schema.prisma
 
-### Install Dependencies
-
-To install the dependencies for the project, run the following command from the root of the monorepo:
-
-    yarn install
-
-### Build the Packages
-
-To build the packages, run the following command from the root of the monorepo:
-
-    yarn build
 
 ### Generate Prisma Client
 

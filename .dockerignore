@@ -1,14 +1,18 @@
-# vs
+# Ignorar configuraciones de VSCode
 .vscode
 
-# docker
+# Ignorar archivos de Docker Compose
 docker-compose.yml
 docker-compose-dev.yml
 
-# app
+# Ignorar node_modules
 node_modules
 
-# database
+# Ignorar archivos de base de datos
 .db-*
 
+# Ignorar archivos de ejemplo de entorno
 .env.example
+
+# Asegúrate de ignorar también archivos de datos específicos
+.db-data

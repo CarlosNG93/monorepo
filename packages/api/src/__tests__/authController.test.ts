@@ -2,6 +2,8 @@ import { fastify, FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { createAuthController } from '../adapters/http/controllers/authController';
 import { AuthService } from '../app/services/authService';
+import { ROLE_USER } from 'utilities/src/common/constants';
+import supertest from 'supertest';
 
 class MockAuthService extends AuthService {
   login = jest.fn();
@@ -98,5 +100,16 @@ describe('authController', () => {
 
     expect(response.statusCode).toBe(500);
     expect(response.json()).toEqual({ error: 'An unexpected error occurred' });
+  });
+
+  it('should sign up a new user', async () => {
+    const newUser = { email: 'newuser@example.com', password: 'password', name: 'New User', role: ROLE_USER };
+
+    const response = await supertest(server.server)
+      .post('/signup')
+      .send(newUser);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('token');
   });
 });

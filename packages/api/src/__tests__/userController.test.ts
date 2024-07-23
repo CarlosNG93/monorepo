@@ -42,16 +42,7 @@ afterAll(async () => {
 });
 
 describe('User Controller', () => {
-  it('should sign up a new user', async () => {
-    const newUser = { email: 'newuser@example.com', password: 'password', name: 'New User', role: ROLE_USER };
-
-    const response = await supertest(server.server)
-      .post('/signup')
-      .send(newUser);
-
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('token');
-  });
+  
 
   it('should get user profile', async () => {
     const token = server.jwt.sign({ id: 1, email: 'user1@example.com', role: ROLE_ADMIN });

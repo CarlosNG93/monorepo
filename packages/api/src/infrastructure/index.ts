@@ -99,6 +99,7 @@ app.register(fastifyStatic, {
 
 app.register(fastifyCors, {
   origin: "*",
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 });
 

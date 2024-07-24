@@ -41,7 +41,7 @@ app.register(fastifySwagger as any, {
         description: 'Development server'
       },
       {
-        url: 'https://monorepo.carltech.es',
+        url: 'monorepo.carltech.es',
         description: 'Production server'
       }
     ],

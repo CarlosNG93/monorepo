@@ -9,6 +9,10 @@ COPY package.json yarn.lock ./
 COPY packages/api/package.json packages/api/
 COPY packages/services/package.json packages/services/
 COPY packages/utilities/package.json packages/utilities/
+COPY scripts/start.sh /app/scripts/
+COPY scripts/init-db.sh /app/scripts/
+
+RUN chmod +x /app/scripts/start.sh /app/scripts/init-db.sh
 
 RUN yarn install --frozen-lockfile --non-interactive
 

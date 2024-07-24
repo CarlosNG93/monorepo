@@ -13,7 +13,6 @@ https://monorepo.carltech.es/docs
   - [Configure URLs](#configure-urls)
   - [Install Dependencies](#install-dependencies)
   - [Build the Packages](#build-the-packages)
-  - [Generate Prisma Client](#generate-prisma-client)
   - [Start the API Server](#start-the-api-server)
   - [Testing](#testing)
 - [Project Structure](#project-structure)
@@ -78,13 +77,6 @@ You can run Prisma commands inside the container, for example:
 You can migrate inside the container:
 
     npx prisma migrate dev --schema=./packages/api/prisma/schema.prisma
-
-### Generate Prisma Client
-
-Before starting the API server, you need to generate the Prisma client. Run the following command:
-
-    npx prisma generate --schema=./packages/api/prisma/schema.prisma
-
 
 ### Running Tests
 

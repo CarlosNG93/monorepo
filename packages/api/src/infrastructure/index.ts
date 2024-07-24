@@ -41,7 +41,7 @@ app.register(fastifySwagger as any, {
         description: 'Development server'
       },
       {
-        url: 'monorepo.carltech.es',
+        url: 'https://monorepo.carltech.es',
         description: 'Production server'
       }
     ],
@@ -99,8 +99,6 @@ app.register(fastifyStatic, {
 
 app.register(fastifyCors, {
   origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 });
 

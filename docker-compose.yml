@@ -11,6 +11,17 @@ x-configs:
         max-size: "10m"
 
 services:
+  pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin4_container
+      restart: always
+      ports:
+        - "8888:80"
+      environment:
+        PGADMIN_DEFAULT_EMAIL: carl@gmail.com
+        PGADMIN_DEFAULT_PASSWORD: password
+      volumes:
+        - pgadmin-data:/var/lib/pgadmin
   db:
     image: postgres:13.1-alpine
     environment:
@@ -25,12 +36,7 @@ services:
     <<: [*logging, *policy]
 
   app:
-    build:
-      context: ./
-      target: dev
-    volumes:
-      - .:/app
-      - /app/node_modules
+    image: carlosnunez1/monorepo:20240724.a
     ports:
       - "3000:3000"
     command: ./scripts/start.sh
@@ -40,3 +46,4 @@ services:
 
 volumes:
   db-data:
+  pgadmin-data:

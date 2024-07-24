@@ -36,10 +36,10 @@ app.register(fastifySwagger as any, {
       version: '0.1.0'
     },
     servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server'
-      },
+      // {
+      //   url: 'http://localhost:3000',
+      //   description: 'Development server'
+      // },
       {
         url: 'https://monorepo.carltech.es',
         description: 'Production server'
